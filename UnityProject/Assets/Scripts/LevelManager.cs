@@ -1,4 +1,8 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
+using System.Collections;
+using UnityEngine.SceneManagement;
+
 
 public class LevelManager : MonoBehaviour
 {
@@ -10,11 +14,13 @@ public class LevelManager : MonoBehaviour
     public GameObject randomSkill;
 
     private Animator door;
+    private Image cross;
 
     private void Start()
     {
         door = GameObject.Find("門").GetComponent<Animator>();
-        
+        cross = GameObject.Find("轉場畫面").GetComponent<Image>();
+
         if (autoOpenDoor) Invoke("OpenDoor", 6);    // 延遲調用("方法名稱"，延遲時間)
         if (showRandomSkill) ShowRandomSkill();
     }
@@ -33,5 +39,20 @@ public class LevelManager : MonoBehaviour
     private void OpenDoor()
     {
         door.SetTrigger("開門");  // 動畫控制器.設定觸發("參數名稱")
+    }
+
+    private IEnumerator LoadLevel()
+    {
+        AsyncOperation ao = SceneManager.LoadSceneAsync("關卡2");     // 載入場景資訊 = 載入場景("場景名稱")
+        ao.allowSceneActivation = false;                              // 載入場景資訊.是否允許切換 = 否
+        
+        while (!ao.isDone)                                            // 當(載入場景資訊是否完成 為 否)
+        {
+            print(ao.progress);
+            cross.color = new Color(1, 1, 1, ao.progress);            // 轉場畫面.顏色(1，1，1，透明度) // ao.progress載入進度 0-0.9
+            yield return new WaitForSeconds(0.01f);
+
+            if (ao.progress >= 0.9f) ao.allowSceneActivation = true;  // 允許切換條件
+        }
     }
 }
